@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MediAssist — Appuntamenti</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .main-content { padding: 2rem 1.5rem; max-width: 1100px; margin: 0 auto; }
+
+    .section-tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0;
+    }
+
+    .section-tab {
+      padding: 10px 20px;
+      background: none;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: all 0.2s;
+    }
+
+    .section-tab.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+
+    /* ── BOOK APPOINTMENT ── */
+    .booking-steps {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 768px) { .booking-steps { grid-template-columns: 1fr; } }
+
+    .step-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .step-header {
+      padding: 1.2rem 1.4rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .step-number {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: white;
+      font-size: 0.8rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .step-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1rem;
+      color: var(--primary-dark);
+    }
+
+    .step-body { padding: 1.2rem 1.4rem; }
+
+    /* Doctor list */
+    .doctors-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .doctor-list-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .doctor-list-item:hover {
+      border-color: var(--primary-light);
+      background: rgba(26,95,122,0.03);
+    }
+
+    .doctor-list-item.selected {
+      border-color: var(--accent);
+      background: rgba(87,196,176,0.06);
+    }
+
+    .doctor-list-item .doc-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-family: 'DM Serif Display', serif;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .doc-info { flex: 1; }
+    .doc-name { font-weight: 600; font-size: 0.88rem; }
+    .doc-spec { color: var(--primary-light); font-size: 0.78rem; }
+
+    /* Symptom input for AI recommendation */
+    .ai-rec-section {
+      background: linear-gradient(135deg, rgba(26,95,122,0.04), rgba(87,196,176,0.04));
+      border: 1px solid rgba(87,196,176,0.25);
+      border-radius: var(--radius-sm);
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .ai-rec-title {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.6rem;
+    }
+
+    .ai-rec-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .ai-rec-result {
+      margin-top: 0.8rem;
+      display: none;
+    }
+
+    .ai-rec-result.visible { display: block; }
+
+    /* Booking summary */
+    .booking-summary {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1.4rem;
+      margin-top: 1.5rem;
+      display: none;
+    }
+
+    .booking-summary.visible { display: block; animation: fadeIn 0.3s ease; }
+
+    .summary-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.1rem;
+      color: var(--primary-dark);
+      margin-bottom: 1rem;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .summary-item label {
+      display: block;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 3px;
+    }
+
+    .summary-item span {
+      font-weight: 600;
+      color: var(--text);
+      font-size: 0.92rem;
+    }
+
+    /* ── APPOINTMENTS LIST ── */
+    .appt-filter {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 1.2rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-chip {
+      padding: 6px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 20px;
+      font-size: 0.82rem;
+      cursor: pointer;
+      background: var(--surface);
+      transition: all 0.15s;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .filter-chip.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+
+    .appt-list { display: flex; flex-direction: column; gap: 0.7rem; }
+
+    .appt-actions { display: flex; gap: 6px; }
+  </style>
+</head>
+<body>
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a href="index.html" class="navbar-brand">
+      <div class="logo-icon">🏥</div>
+      <span>MediAssist</span>
+    </a>
+    <ul class="navbar-nav">
+      <li><a href="chat.html">Chat</a></li>
+      <li><a href="appointments.html" class="active">Appuntamenti</a></li>
+    </ul>
+    <div class="navbar-user">
+      <div class="avatar" id="navAvatar">?</div>
+      <span id="navName">Caricamento...</span>
+      <button class="btn btn-sm btn-secondary" onclick="logout()">Esci</button>
+    </div>
+  </nav>
+
+  <div class="main-content">
+    <div class="page-header fade-in">
+      <h1 class="page-title">Appuntamenti</h1>
+      <p class="page-subtitle">Prenota una visita o gestisci le tue prenotazioni</p>
+    </div>
+
+    <div class="section-tabs">
+      <button class="section-tab active" onclick="showSection('book')">📅 Nuova prenotazione</button>
+      <button class="section-tab" onclick="showSection('list')">📋 Le mie prenotazioni</button>
+    </div>
+
+    <!-- BOOK APPOINTMENT -->
+    <div id="bookSection" class="tab-content active">
+
+      <!-- AI Recommendation -->
+      <div class="ai-rec-section">
+        <div class="ai-rec-title">🤖 Trova il medico giusto con l'AI</div>
+        <div class="ai-rec-row">
+          <input type="text" class="form-input" id="symptomInput" placeholder="Descrivi i sintomi (es. mal di testa, febbre...)">
+          <button class="btn btn-accent" onclick="getAiRecommendation()">
+            <span id="aiRecBtnText">Analizza</span>
+          </button>
+        </div>
+        <div class="ai-rec-result" id="aiRecResult"></div>
+      </div>
+
+      <div class="booking-steps">
+        <!-- Step 1: Choose doctor -->
+        <div class="step-card">
+          <div class="step-header">
+            <div class="step-number">1</div>
+            <div class="step-title">Scegli il medico</div>
+          </div>
+          <div class="step-body">
+            <div class="form-group">
+              <input type="text" class="form-input" id="doctorSearch" placeholder="Cerca per nome o specializzazione..." oninput="filterDoctors()">
+            </div>
+            <div class="doctors-list" id="doctorsList">
+              <div class="empty-state"><div class="empty-icon">👨‍⚕️</div><p>Caricamento medici...</p></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Choose slot -->
+        <div class="step-card">
+          <div class="step-header">
+            <div class="step-number">2</div>
+            <div class="step-title">Scegli orario</div>
+          </div>
+          <div class="step-body">
+            <div id="slotsSection">
+              <div class="empty-state">
+                <div class="empty-icon">📅</div>
+                <p>Seleziona prima un medico</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div style="margin-top: 1.2rem;">
+        <div class="form-group">
+          <label class="form-label">Note (opzionale)</label>
+          <textarea class="form-input" id="apptNotes" rows="2" placeholder="Descrivi brevemente il motivo della visita..."></textarea>
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div class="booking-summary" id="bookingSummary">
+        <div class="summary-title">📋 Riepilogo prenotazione</div>
+        <div class="summary-grid">
+          <div class="summary-item">
+            <label>Medico</label>
+            <span id="summaryDoctor">—</span>
+          </div>
+          <div class="summary-item">
+            <label>Specializzazione</label>
+            <span id="summarySpec">—</span>
+          </div>
+          <div class="summary-item">
+            <label>Data</label>
+            <span id="summaryDate">—</span>
+          </div>
+          <div class="summary-item">
+            <label>Ora</label>
+            <span id="summaryTime">—</span>
+          </div>
+        </div>
+        <div id="bookingAlert"></div>
+        <button class="btn btn-primary" onclick="confirmBooking()">
+          <span id="bookBtnText">✓ Conferma prenotazione</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- MY APPOINTMENTS -->
+    <div id="listSection" class="tab-content">
+      <div class="appt-filter">
+        <button class="filter-chip active" onclick="filterAppts('all', this)">Tutti</button>
+        <button class="filter-chip" onclick="filterAppts('scheduled', this)">Confermati</button>
+        <button class="filter-chip" onclick="filterAppts('cancelled', this)">Cancellati</button>
+      </div>
+      <div id="apptList">
+        <div class="empty-state"><div class="spinner spinner-dark"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = 'http://localhost:8080';
+    let patient = null;
+    let allDoctors = [];
+    let selectedDoctor = null;
+    let selectedSlot = null;
+    let allAppointments = [];
+
+    // Auth check
+    const stored = localStorage.getItem('patient');
+    if (!stored) window.location.href = 'index.html';
+    else {
+      patient = JSON.parse(stored);
+      initUI();
+    }
+
+    function initUI() {
+      const initials = patient.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+      document.getElementById('navAvatar').textContent = initials;
+      document.getElementById('navName').textContent = patient.name;
+      loadDoctors();
+      loadAppointments();
+    }
+
+    function showSection(section) {
+      document.querySelectorAll('.section-tab').forEach((t, i) => {
+        t.classList.toggle('active', (i === 0 && section === 'book') || (i === 1 && section === 'list'));
+      });
+      document.getElementById('bookSection').classList.toggle('active', section === 'book');
+      document.getElementById('listSection').classList.toggle('active', section === 'list');
+    }
+
+    async function loadDoctors() {
+      try {
+        const res = await fetch(`${API}/api/doctors/`);
+        allDoctors = await res.json();
+        renderDoctors(allDoctors);
+      } catch (e) {
+        document.getElementById('doctorsList').innerHTML = '<div class="alert alert-error">Errore caricamento medici</div>';
+      }
+    }
+
+    function renderDoctors(doctors) {
+      const container = document.getElementById('doctorsList');
+      if (!doctors.length) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-icon">👨‍⚕️</div><p>Nessun medico trovato</p></div>';
+        return;
+      }
+      container.innerHTML = doctors.map(d => `
+        <div class="doctor-list-item ${selectedDoctor?.id === d.id ? 'selected' : ''}" onclick="selectDoctor(${d.id})">
+          <div class="doc-avatar">${d.name[0]}</div>
+          <div class="doc-info">
+            <div class="doc-name">${d.name}</div>
+            <div class="doc-spec">${d.specialization}</div>
+          </div>
+          ${selectedDoctor?.id === d.id ? '<span style="color:var(--accent)">✓</span>' : ''}
+        </div>
+      `).join('');
+    }
+
+    function filterDoctors() {
+      const q = document.getElementById('doctorSearch').value.toLowerCase();
+      renderDoctors(allDoctors.filter(d =>
+        d.name.toLowerCase().includes(q) || d.specialization.toLowerCase().includes(q)
+      ));
+    }
+
+    async function selectDoctor(id) {
+      selectedDoctor = allDoctors.find(d => d.id === id);
+      selectedSlot = null;
+      renderDoctors(allDoctors.filter(d => {
+        const q = document.getElementById('doctorSearch').value.toLowerCase();
+        return d.name.toLowerCase().includes(q) || d.specialization.toLowerCase().includes(q);
+      }));
+      loadSlots(id);
+      updateSummary();
+    }
+
+    async function loadSlots(doctorId) {
+      const container = document.getElementById('slotsSection');
+      container.innerHTML = '<div class="empty-state"><div class="spinner spinner-dark"></div></div>';
+
+      try {
+        const res = await fetch(`${API}/api/appointments/doctor/${doctorId}/slots`);
+        const data = await res.json();
+
+        if (!data.available_slots.length) {
+          container.innerHTML = '<div class="empty-state"><p>Nessuno slot disponibile</p></div>';
+          return;
+        }
+
+        // Group by date
+        const grouped = {};
+        data.available_slots.forEach(slot => {
+          const date = new Date(slot);
+          const dateKey = date.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' });
+          if (!grouped[dateKey]) grouped[dateKey] = [];
+          grouped[dateKey].push(slot);
+        });
+
+        container.innerHTML = Object.entries(grouped).slice(0, 4).map(([date, slots]) => `
+          <div style="margin-bottom: 1rem;">
+            <div style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">${date}</div>
+            <div class="slots-grid">
+              ${slots.map(slot => {
+                const time = new Date(slot).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+                return `<button class="slot-btn ${selectedSlot === slot ? 'selected' : ''}" onclick="selectSlot('${slot}')">${time}</button>`;
+              }).join('')}
+            </div>
+          </div>
+        `).join('');
+      } catch (e) {
+        container.innerHTML = '<div class="alert alert-error">Errore caricamento slot</div>';
+      }
+    }
+
+    function selectSlot(slot) {
+      selectedSlot = slot;
+      if (selectedDoctor) loadSlots(selectedDoctor.id);
+      updateSummary();
+    }
+
+    function updateSummary() {
+      const summary = document.getElementById('bookingSummary');
+      if (selectedDoctor && selectedSlot) {
+        const dt = new Date(selectedSlot);
+        document.getElementById('summaryDoctor').textContent = selectedDoctor.name;
+        document.getElementById('summarySpec').textContent = selectedDoctor.specialization;
+        document.getElementById('summaryDate').textContent = dt.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' });
+        document.getElementById('summaryTime').textContent = dt.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+        summary.classList.add('visible');
+      } else {
+        summary.classList.remove('visible');
+      }
+    }
+
+    async function confirmBooking() {
+      if (!selectedDoctor || !selectedSlot) return;
+
+      const btn = document.getElementById('bookBtnText');
+      btn.innerHTML = '<span class="spinner"></span>';
+
+      try {
+        const res = await fetch(`${API}/api/appointments/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            patient_id: patient.id,
+            doctor_id: selectedDoctor.id,
+            datetime: selectedSlot,
+            notes: document.getElementById('apptNotes').value || null
+          })
+        });
+
+        if (res.status === 400) {
+          document.getElementById('bookingAlert').innerHTML = '<div class="alert alert-error">Slot già occupato. Scegli un altro orario.</div>';
+          return;
+        }
+
+        document.getElementById('bookingAlert').innerHTML = '<div class="alert alert-success">✓ Prenotazione confermata!</div>';
+        selectedDoctor = null;
+        selectedSlot = null;
+        document.getElementById('bookingSummary').classList.remove('visible');
+        document.getElementById('apptNotes').value = '';
+        loadDoctors();
+        loadAppointments();
+        setTimeout(() => showSection('list'), 1500);
+
+      } catch (e) {
+        document.getElementById('bookingAlert').innerHTML = '<div class="alert alert-error">Errore durante la prenotazione</div>';
+      } finally {
+        btn.innerHTML = '✓ Conferma prenotazione';
+      }
+    }
+
+    async function loadAppointments() {
+      try {
+        const res = await fetch(`${API}/api/appointments/patient/${patient.id}`);
+        allAppointments = await res.json();
+        renderAppointments(allAppointments);
+      } catch (e) {}
+    }
+
+    function renderAppointments(appointments) {
+      const container = document.getElementById('apptList');
+      if (!appointments.length) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-icon">📅</div><p>Nessun appuntamento trovato</p></div>';
+        return;
+      }
+
+      const sorted = [...appointments].sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
+
+      container.innerHTML = sorted.map(a => {
+        const dt = new Date(a.datetime);
+        const day = dt.getDate();
+        const month = dt.toLocaleDateString('it-IT', { month: 'short' });
+        const time = dt.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+        const statusBadge = {
+          scheduled: '<span class="badge badge-success">Confermato</span>',
+          cancelled: '<span class="badge badge-error">Cancellato</span>',
+          completed: '<span class="badge badge-info">Completato</span>'
+        }[a.status] || '';
+
+        return `
+          <div class="appointment-item fade-in">
+            <div class="appt-date">
+              <div class="day">${day}</div>
+              <div class="month">${month}</div>
+            </div>
+            <div class="appt-info">
+              <div class="appt-doctor">${a.doctor ? a.doctor.name : 'Medico #' + a.doctor_id}</div>
+              <div class="appt-time">⏰ ${time} ${a.doctor ? '· ' + a.doctor.specialization : ''}</div>
+              ${a.notes ? `<div style="font-size:0.78rem;color:var(--text-muted);margin-top:2px;">📝 ${a.notes}</div>` : ''}
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+              ${statusBadge}
+              ${a.status === 'scheduled' ? `
+                <div class="appt-actions">
+                  <button class="btn btn-sm btn-danger" onclick="cancelAppointment(${a.id})">Cancella</button>
+                </div>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filterAppts(status, btn) {
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      const filtered = status === 'all' ? allAppointments : allAppointments.filter(a => a.status === status);
+      renderAppointments(filtered);
+    }
+
+    async function cancelAppointment(id) {
+      if (!confirm('Sei sicuro di voler cancellare questo appuntamento?')) return;
+      try {
+        await fetch(`${API}/api/appointments/${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'cancelled' })
+        });
+        loadAppointments();
+      } catch (e) {}
+    }
+
+    async function getAiRecommendation() {
+      const symptoms = document.getElementById('symptomInput').value.trim();
+      if (!symptoms) return;
+
+      const btn = document.getElementById('aiRecBtnText');
+      btn.innerHTML = '<span class="spinner"></span>';
+
+      try {
+        const res = await fetch(`${API}/api/doctors/recommend`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: symptoms })
+        });
+        const data = await res.json();
+
+        const resultEl = document.getElementById('aiRecResult');
+        resultEl.innerHTML = `
+          <div style="background:var(--surface);border-radius:var(--radius-sm);padding:1rem;border:1px solid var(--border);">
+            <div style="font-weight:600;color:var(--primary);margin-bottom:4px;">🎯 ${data.recommended_specialization}</div>
+            <div style="font-size:0.82rem;color:var(--text-muted);margin-bottom:6px;">${data.reason}</div>
+            <span class="badge badge-${data.urgency === 'alta' ? 'error' : data.urgency === 'media' ? 'warning' : 'success'}">
+              Urgenza: ${data.urgency}
+            </span>
+            ${data.doctors.length ? `
+              <div style="margin-top:8px;font-size:0.82rem;color:var(--text-muted);">
+                Medici disponibili: ${data.doctors.map(d => `<strong>${d.name}</strong>`).join(', ')}
+              </div>
+            ` : ''}
+          </div>
+        `;
+        resultEl.classList.add('visible');
+
+        // Auto-filter doctors
+        if (data.doctors.length) {
+          document.getElementById('doctorSearch').value = data.recommended_specialization;
+          filterDoctors();
+        }
+      } catch (e) {} finally {
+        btn.innerHTML = 'Analizza';
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('patient');
+      window.location.href = 'index.html';
+    }
+  </script>
+</body>
+</html>

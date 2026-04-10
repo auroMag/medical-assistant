@@ -1,0 +1,22 @@
+# Virtual environment
+venv/
+env/
+
+# Environment variables
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Dataset e file pesanti
+data/datasets/MedQuAD/
+data/datasets/medquad_processed.json
+
+# Upload immagini
+backend/uploads/
+
+# Docker volumes
+postgres_data/
+chroma_data/
