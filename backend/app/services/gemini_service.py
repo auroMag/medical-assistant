@@ -12,10 +12,10 @@ def generate_medical_response(user_message: str, patient_name: str = "paziente")
     context_text = ""
     for i, ctx in enumerate(contexts):
         if ctx["relevance"] > 0.3:
-            context_text += f"\n--- Informazione medica {i+1} ---\n"
+            context_text += f"\n--- Informazione medica {i+1} ({ctx['source']}) ---\n"
             context_text += f"Argomento: {ctx['focus']}\n"
-            context_text += f"Domanda simile: {ctx['question']}\n"
-            context_text += f"Risposta medica: {ctx['answer']}\n"
+            context_text += f"Riferimento: {ctx['question']}\n"
+            context_text += f"Contenuto: {ctx['answer']}\n"
     
     # Step 3: Costruisci il prompt
     if context_text:
