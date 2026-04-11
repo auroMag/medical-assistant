@@ -293,7 +293,7 @@
         if (!res.ok) throw new Error();
 
         const patient = await res.json();
-        localStorage.setItem('patient', JSON.stringify(patient));
+        sessionStorage.setItem('patient', JSON.stringify(patient));
         window.location.href = 'chat.html';
 
       } catch (e) {
@@ -334,7 +334,7 @@
         if (!res.ok) throw new Error();
 
         const patient = await res.json();
-        localStorage.setItem('patient', JSON.stringify(patient));
+        sessionStorage.setItem('patient', JSON.stringify(patient));
         showAlert('registerAlert', 'Account creato! Reindirizzamento...', 'success');
         setTimeout(() => window.location.href = 'chat.html', 1200);
 
@@ -355,7 +355,7 @@
     });
 
     // Redirect if already logged in
-    if (localStorage.getItem('patient')) {
+    if (sessionStorage.getItem('patient')) {
       window.location.href = 'chat.html';
     }
   </script>

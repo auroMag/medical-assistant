@@ -13,6 +13,8 @@ __pycache__/
 # Dataset e file pesanti
 data/datasets/MedQuAD/
 data/datasets/medquad_processed.json
+data/datasets/mtsamples.csv
+data/datasets/mtsamples_processed.json
 
 # Upload immagini
 backend/uploads/

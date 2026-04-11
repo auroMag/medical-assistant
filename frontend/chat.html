@@ -599,7 +599,7 @@
     let isLoading = false;
 
     // Auth check
-    const stored = localStorage.getItem('patient');
+    const stored = sessionStorage.getItem('patient');
     if (!stored) window.location.href = 'index.html';
     else {
       patient = JSON.parse(stored);
@@ -799,7 +799,7 @@
     }
 
     function logout() {
-      localStorage.removeItem('patient');
+      sessionStorage.removeItem('patient');
       window.location.href = 'index.html';
     }
 
