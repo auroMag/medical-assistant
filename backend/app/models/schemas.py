@@ -36,7 +36,11 @@ class DoctorBase(BaseModel):
     phone: Optional[str] = None
 
 class DoctorCreate(DoctorBase):
-    pass
+    password: Optional[str] = None
+
+class DoctorLogin(BaseModel):
+    email: EmailStr
+    password: str
 
 class DoctorResponse(DoctorBase):
     id: int

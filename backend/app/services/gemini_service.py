@@ -21,7 +21,8 @@ def generate_medical_response(user_message: str, patient_name: str = "paziente")
     if context_text:
         system_prompt = """Sei un assistente medico virtuale professionale e empatico. 
 Rispondi in italiano in modo chiaro e comprensibile.
-Usa le informazioni mediche fornite come contesto per rispondere.
+Se il contesto medico fornito NON è pertinente alla domanda del paziente, ignoralo completamente e NON menzionarlo mai nella risposta. Il paziente non deve sapere che esiste un contesto irrilevante.
+Se il paziente ti saluta o fa domande non mediche, rispondi in modo cordiale e naturale senza menzionare il contesto medico.
 Ricorda sempre di consigliare di consultare un medico per diagnosi e trattamenti specifici."""
 
         user_prompt = f"""CONTESTO MEDICO:

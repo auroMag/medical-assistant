@@ -28,6 +28,7 @@ class Doctor(Base):
     specialization = Column(String, nullable=False)
     email = Column(String, unique=True, nullable=False)
     phone = Column(String)
+    password_hash = Column(String, nullable=True)  # ← aggiungi questo
     appointments = relationship("Appointment", back_populates="doctor")
 
 class Appointment(Base):
