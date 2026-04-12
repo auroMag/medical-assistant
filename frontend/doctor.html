@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MediAssist — Area Medico</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* ── LOGIN PAGE ── */
+    .login-page {
+      background: linear-gradient(135deg, #0d3d52 0%, #1a5f7a 50%, #2d8bac 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .login-container {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .login-logo {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .login-logo .logo-circle {
+      width: 64px;
+      height: 64px;
+      background: rgba(255,255,255,0.15);
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem;
+      font-size: 28px;
+    }
+
+    .login-logo h1 {
+      font-family: 'DM Serif Display', serif;
+      color: white;
+      font-size: 2rem;
+      letter-spacing: -0.03em;
+    }
+
+    .login-logo p { color: rgba(255,255,255,0.65); font-size: 0.9rem; margin-top: 4px; }
+
+    .login-card {
+      background: white;
+      border-radius: var(--radius);
+      box-shadow: 0 24px 64px rgba(0,0,0,0.25);
+      padding: 2rem;
+    }
+
+    .login-card h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.4rem;
+      color: var(--primary-dark);
+      margin-bottom: 0.4rem;
+    }
+
+    .login-card p { color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1.6rem; }
+
+    .password-wrapper { position: relative; }
+    .password-toggle {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 1rem;
+    }
+    .password-wrapper .form-input { padding-right: 40px; }
+
+    /* ── DASHBOARD ── */
+    .dashboard { display: none; flex-direction: column; min-height: 100vh; }
+    .dashboard.visible { display: flex; }
+
+    .dash-content { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; width: 100%; }
+
+    .dash-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+    }
+
+    .doctor-welcome h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.8rem;
+      color: var(--primary-dark);
+      letter-spacing: -0.02em;
+    }
+
+    .doctor-welcome p { color: var(--text-muted); font-size: 0.9rem; margin-top: 4px; }
+
+    /* Stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.2rem 1.4rem;
+      box-shadow: var(--shadow);
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+    }
+
+    .stat-value {
+      font-family: 'DM Serif Display', serif;
+      font-size: 2rem;
+      color: var(--primary);
+      line-height: 1;
+    }
+
+    .stat-sub { font-size: 0.78rem; color: var(--text-muted); margin-top: 4px; }
+
+    /* Tabs */
+    .dash-tabs {
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 1.5rem;
+    }
+
+    .dash-tab {
+      padding: 10px 20px;
+      background: none;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: all 0.2s;
+    }
+
+    .dash-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+
+    /* Appointment cards */
+    .appt-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.2rem 1.4rem;
+      margin-bottom: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: var(--shadow);
+    }
+
+    .appt-card:hover {
+      border-color: var(--primary-light);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .appt-date-box {
+      min-width: 70px;
+      text-align: center;
+      background: var(--surface-2);
+      border-radius: var(--radius-sm);
+      padding: 8px;
+    }
+
+    .appt-date-box .day {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.6rem;
+      color: var(--primary);
+      line-height: 1;
+    }
+
+    .appt-date-box .month {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+    }
+
+    .appt-info { flex: 1; }
+    .appt-patient-name { font-weight: 600; font-size: 0.95rem; color: var(--text); }
+    .appt-meta { color: var(--text-muted); font-size: 0.82rem; margin-top: 3px; }
+    .appt-notes { color: var(--text-muted); font-size: 0.78rem; margin-top: 4px; font-style: italic; }
+
+    /* Patient modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10,25,40,0.5);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .modal {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      width: 100%;
+      max-width: 640px;
+      max-height: 85vh;
+      overflow-y: auto;
+      animation: slideUp 0.3s ease;
+    }
+
+    .modal-header {
+      padding: 1.4rem 1.6rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      background: var(--surface);
+      z-index: 1;
+    }
+
+    .modal-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.2rem;
+      color: var(--primary-dark);
+    }
+
+    .modal-close {
+      background: none; border: none; cursor: pointer;
+      color: var(--text-muted); font-size: 1.3rem; padding: 4px;
+      border-radius: 4px; transition: color 0.2s;
+    }
+
+    .modal-close:hover { color: var(--text); }
+    .modal-body { padding: 1.6rem; }
+
+    /* Patient info in modal */
+    .patient-detail-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.4rem;
+      padding-bottom: 1.2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .patient-detail-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+
+    .patient-detail-name { font-weight: 600; font-size: 1.1rem; }
+    .patient-detail-meta { color: var(--text-muted); font-size: 0.85rem; margin-top: 2px; }
+
+    /* Chat history in modal */
+    .chat-history-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1rem;
+      color: var(--primary-dark);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .chat-item {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      margin-bottom: 0.8rem;
+      overflow: hidden;
+    }
+
+    .chat-item-header {
+      background: var(--surface-2);
+      padding: 8px 12px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .chat-item-body { padding: 10px 12px; }
+
+    .chat-msg {
+      font-size: 0.85rem;
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 6px;
+    }
+
+    .chat-msg.patient {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: white;
+      margin-left: 20%;
+    }
+
+    .chat-msg.assistant {
+      background: var(--surface-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      margin-right: 20%;
+    }
+
+    .chat-msg-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      margin-bottom: 3px;
+      opacity: 0.8;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    @media (max-width: 768px) {
+      .stats-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── LOGIN ── -->
+  <div class="login-page" id="loginPage">
+    <div class="login-container fade-in">
+      <div class="login-logo">
+        <div class="logo-circle">👨‍⚕️</div>
+        <h1>MediAssist</h1>
+        <p>Area riservata medici</p>
+      </div>
+      <div class="login-card">
+        <h2>Accesso medico</h2>
+        <p>Inserisci le tue credenziali per accedere alla dashboard</p>
+
+        <div id="loginAlert"></div>
+
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" id="loginEmail" class="form-input" placeholder="medico@mediassist.it">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <div class="password-wrapper">
+            <input type="password" id="loginPassword" class="form-input" placeholder="La tua password">
+            <button class="password-toggle" onclick="togglePassword('loginPassword', this)">👁</button>
+          </div>
+        </div>
+
+        <button class="btn btn-primary btn-full" onclick="handleLogin()">
+          <span id="loginBtnText">Accedi</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DASHBOARD ── -->
+  <div class="dashboard" id="dashboard">
+    <nav class="navbar">
+      <a href="#" class="navbar-brand">
+        <div class="logo-icon">🏥</div>
+        <span>MediAssist</span>
+      </a>
+      <div style="font-size:0.82rem;color:var(--text-muted);background:var(--surface-2);padding:4px 12px;border-radius:20px;border:1px solid var(--border);">
+        👨‍⚕️ Area Medico
+      </div>
+      <div class="navbar-user">
+        <div class="avatar" id="navAvatar">?</div>
+        <span id="navName">—</span>
+        <button class="btn btn-sm btn-secondary" onclick="logout()">Esci</button>
+      </div>
+    </nav>
+
+    <div class="dash-content">
+      <!-- Header -->
+      <div class="dash-header fade-in">
+        <div class="doctor-welcome">
+          <h1 id="welcomeName">Benvenuto</h1>
+          <p id="welcomeSpec">—</p>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid fade-in">
+        <div class="stat-card">
+          <div class="stat-label">Appuntamenti totali</div>
+          <div class="stat-value" id="statTotal">0</div>
+          <div class="stat-sub">Tutti gli appuntamenti</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Confermati</div>
+          <div class="stat-value" id="statScheduled" style="color:var(--success)">0</div>
+          <div class="stat-sub">Da effettuare</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Pazienti unici</div>
+          <div class="stat-value" id="statPatients" style="color:var(--accent)">0</div>
+          <div class="stat-sub">Pazienti in cura</div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="dash-tabs">
+        <button class="dash-tab active" onclick="showTab('appointments')">📅 Appuntamenti</button>
+        <button class="dash-tab" onclick="showTab('patients')">👥 Pazienti</button>
+      </div>
+
+      <!-- Appointments tab -->
+      <div id="appointmentsTab" class="tab-content active">
+        <div style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;">
+          <button class="filter-chip active" onclick="filterAppts('all', this)" style="padding:6px 14px;border:1.5px solid var(--border);border-radius:20px;font-size:0.82rem;cursor:pointer;background:var(--primary);border-color:var(--primary);color:white;font-family:'DM Sans',sans-serif;">Tutti</button>
+          <button class="filter-chip" onclick="filterAppts('scheduled', this)" style="padding:6px 14px;border:1.5px solid var(--border);border-radius:20px;font-size:0.82rem;cursor:pointer;background:var(--surface);font-family:'DM Sans',sans-serif;">Confermati</button>
+          <button class="filter-chip" onclick="filterAppts('cancelled', this)" style="padding:6px 14px;border:1.5px solid var(--border);border-radius:20px;font-size:0.82rem;cursor:pointer;background:var(--surface);font-family:'DM Sans',sans-serif;">Cancellati</button>
+        </div>
+        <div id="appointmentsList">
+          <div class="empty-state"><div class="spinner spinner-dark"></div></div>
+        </div>
+      </div>
+
+      <!-- Patients tab -->
+      <div id="patientsTab" class="tab-content">
+        <div id="patientsList">
+          <div class="empty-state"><div class="spinner spinner-dark"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PATIENT MODAL ── -->
+  <div class="modal-overlay" id="patientModal" style="display:none" onclick="closeModal(event)">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Dettaglio paziente</div>
+        <button class="modal-close" onclick="document.getElementById('patientModal').style.display='none'">✕</button>
+      </div>
+      <div class="modal-body" id="modalContent">
+        <div class="empty-state"><div class="spinner spinner-dark"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = 'http://localhost:8080';
+    let doctor = null;
+    let allAppointments = [];
+
+    function togglePassword(inputId, btn) {
+      const input = document.getElementById(inputId);
+      input.type = input.type === 'password' ? 'text' : 'password';
+      btn.textContent = input.type === 'password' ? '👁' : '🙈';
+    }
+
+    function showAlert(id, msg, type = 'error') {
+      const el = document.getElementById(id);
+      el.innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
+      setTimeout(() => el.innerHTML = '', 4000);
+    }
+
+    async function handleLogin() {
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+
+      if (!email || !password) return showAlert('loginAlert', 'Inserisci email e password');
+
+      const btn = document.getElementById('loginBtnText');
+      btn.innerHTML = '<span class="spinner"></span>';
+
+      try {
+        const res = await fetch(`${API}/api/doctors/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        if (res.status === 401) {
+          showAlert('loginAlert', 'Email o password errati');
+          return;
+        }
+
+        if (!res.ok) throw new Error();
+
+        doctor = await res.json();
+        sessionStorage.setItem('doctor', JSON.stringify(doctor));
+        showDashboard();
+
+      } catch (e) {
+        showAlert('loginAlert', 'Errore di connessione al server');
+      } finally {
+        btn.innerHTML = 'Accedi';
+      }
+    }
+
+    function showDashboard() {
+      document.getElementById('loginPage').style.display = 'none';
+      document.getElementById('dashboard').classList.add('visible');
+
+      const initials = doctor.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+      document.getElementById('navAvatar').textContent = initials;
+      document.getElementById('navName').textContent = doctor.name;
+      document.getElementById('welcomeName').textContent = `Benvenuto, ${doctor.name}`;
+      document.getElementById('welcomeSpec').textContent = `Specializzazione: ${doctor.specialization}`;
+
+      loadDashboard();
+    }
+
+    async function loadDashboard() {
+      try {
+        const res = await fetch(`${API}/api/doctors/${doctor.id}/appointments-with-patients`);
+        allAppointments = await res.json();
+
+        // Stats
+        const scheduled = allAppointments.filter(a => a.status === 'scheduled').length;
+        const uniquePatients = new Set(allAppointments.map(a => a.patient.id)).size;
+
+        document.getElementById('statTotal').textContent = allAppointments.length;
+        document.getElementById('statScheduled').textContent = scheduled;
+        document.getElementById('statPatients').textContent = uniquePatients;
+
+        renderAppointments(allAppointments);
+        renderPatients(allAppointments);
+
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function renderAppointments(appointments) {
+      const container = document.getElementById('appointmentsList');
+      if (!appointments.length) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-icon">📅</div><p>Nessun appuntamento trovato</p></div>';
+        return;
+      }
+
+      const sorted = [...appointments].sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
+
+      container.innerHTML = sorted.map(a => {
+        const dt = new Date(a.datetime);
+        const day = dt.getDate();
+        const month = dt.toLocaleDateString('it-IT', { month: 'short' });
+        const time = dt.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+        const statusBadge = {
+          scheduled: '<span class="badge badge-success">Confermato</span>',
+          cancelled: '<span class="badge badge-error">Cancellato</span>',
+          completed: '<span class="badge badge-info">Completato</span>'
+        }[a.status] || '';
+
+        return `
+          <div class="appt-card" onclick="openPatientModal(${JSON.stringify(a).replace(/"/g, '&quot;')})">
+            <div class="appt-date-box">
+              <div class="day">${day}</div>
+              <div class="month">${month}</div>
+            </div>
+            <div class="appt-info">
+              <div class="appt-patient-name">👤 ${a.patient.name}</div>
+              <div class="appt-meta">⏰ ${time} &nbsp;·&nbsp; 📧 ${a.patient.email}</div>
+              ${a.notes ? `<div class="appt-notes">📝 ${a.notes}</div>` : ''}
+              ${a.chat_history.length ? `<div class="appt-meta">💬 ${a.chat_history.length} messaggi in chat</div>` : ''}
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+              ${statusBadge}
+              <span style="font-size:0.75rem;color:var(--text-muted);">Clicca per dettagli →</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderPatients(appointments) {
+      const container = document.getElementById('patientsList');
+      
+      // Deduplicazione pazienti
+      const patientsMap = {};
+      appointments.forEach(a => {
+        if (!patientsMap[a.patient.id]) {
+          patientsMap[a.patient.id] = {
+            ...a.patient,
+            appointments: [],
+            chat_history: a.chat_history
+          };
+        }
+        patientsMap[a.patient.id].appointments.push(a);
+      });
+
+      const patients = Object.values(patientsMap);
+
+      if (!patients.length) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-icon">👥</div><p>Nessun paziente trovato</p></div>';
+        return;
+      }
+
+      container.innerHTML = `
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;">
+          ${patients.map(p => {
+            const initials = p.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+            const apptCount = p.appointments.length;
+            const chatCount = p.chat_history.length;
+            return `
+              <div class="appt-card" onclick="openPatientFromList(${p.id})" style="flex-direction:column;align-items:flex-start;cursor:pointer;">
+                <div style="display:flex;align-items:center;gap:12px;width:100%;">
+                  <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));display:flex;align-items:center;justify-content:center;color:white;font-family:'DM Serif Display',serif;font-size:1rem;flex-shrink:0;">${initials}</div>
+                  <div style="flex:1;">
+                    <div style="font-weight:600;font-size:0.92rem;">${p.name}</div>
+                    <div style="font-size:0.78rem;color:var(--text-muted);">${p.email}</div>
+                  </div>
+                </div>
+                <div style="display:flex;gap:8px;margin-top:10px;width:100%;">
+                  <span class="badge badge-info">📅 ${apptCount} appuntament${apptCount === 1 ? 'o' : 'i'}</span>
+                  <span class="badge badge-success">💬 ${chatCount} messagg${chatCount === 1 ? 'io' : 'i'}</span>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    function filterAppts(status, btn) {
+      document.querySelectorAll('.filter-chip').forEach(c => {
+        c.style.background = 'var(--surface)';
+        c.style.borderColor = 'var(--border)';
+        c.style.color = 'var(--text)';
+      });
+      btn.style.background = 'var(--primary)';
+      btn.style.borderColor = 'var(--primary)';
+      btn.style.color = 'white';
+
+      const filtered = status === 'all' ? allAppointments : allAppointments.filter(a => a.status === status);
+      renderAppointments(filtered);
+    }
+
+    function showTab(tab) {
+      document.querySelectorAll('.dash-tab').forEach((t, i) => {
+        t.classList.toggle('active', (i === 0 && tab === 'appointments') || (i === 1 && tab === 'patients'));
+      });
+      document.getElementById('appointmentsTab').classList.toggle('active', tab === 'appointments');
+      document.getElementById('patientsTab').classList.toggle('active', tab === 'patients');
+    }
+
+    function openPatientModal(appt) {
+      const modal = document.getElementById('patientModal');
+      const content = document.getElementById('modalContent');
+      modal.style.display = 'flex';
+
+      const p = appt.patient;
+      const initials = p.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+      const dt = new Date(appt.datetime);
+
+      content.innerHTML = `
+        <div class="patient-detail-header">
+          <div class="patient-detail-avatar">${initials}</div>
+          <div>
+            <div class="patient-detail-name">${p.name}</div>
+            <div class="patient-detail-meta">📧 ${p.email} ${p.phone ? '&nbsp;·&nbsp; 📞 ' + p.phone : ''}</div>
+          </div>
+        </div>
+
+        <div style="background:var(--surface-2);border-radius:var(--radius-sm);padding:1rem;margin-bottom:1.4rem;border:1px solid var(--border);">
+          <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);font-weight:600;margin-bottom:0.6rem;">Dettagli appuntamento</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;">
+            <div>
+              <div style="font-size:0.72rem;color:var(--text-muted);">Data e ora</div>
+              <div style="font-weight:600;font-size:0.88rem;">${dt.toLocaleDateString('it-IT', {weekday:'long',day:'numeric',month:'long'})} alle ${dt.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}</div>
+            </div>
+            <div>
+              <div style="font-size:0.72rem;color:var(--text-muted);">Stato</div>
+              <div style="font-weight:600;font-size:0.88rem;">${appt.status === 'scheduled' ? '✅ Confermato' : appt.status === 'cancelled' ? '❌ Cancellato' : '✓ Completato'}</div>
+            </div>
+            ${appt.notes ? `
+            <div style="grid-column:1/-1;">
+              <div style="font-size:0.72rem;color:var(--text-muted);">Note del paziente</div>
+              <div style="font-size:0.88rem;color:var(--text);">${appt.notes}</div>
+            </div>` : ''}
+          </div>
+        </div>
+
+        <div class="chat-history-title">
+          💬 Storico chat con l'assistente
+          <span class="badge badge-info">${appt.chat_history.length} messaggi</span>
+        </div>
+
+        ${appt.chat_history.length === 0 ? 
+          '<div class="empty-state" style="padding:1.5rem;"><div class="empty-icon">💬</div><p>Nessuna conversazione precedente</p></div>' :
+          appt.chat_history.map((c, i) => `
+            <div class="chat-item">
+              <div class="chat-item-header">
+                <span>Conversazione ${i + 1}</span>
+                <span>${new Date(c.created_at).toLocaleDateString('it-IT')} ${new Date(c.created_at).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}</span>
+              </div>
+              <div class="chat-item-body">
+                <div class="chat-msg patient">
+                  <div class="chat-msg-label">Paziente</div>
+                  ${c.message}
+                </div>
+                ${c.response ? `
+                <div class="chat-msg assistant">
+                  <div class="chat-msg-label">Assistente AI</div>
+                  ${c.response.length > 300 ? c.response.substring(0, 300) + '...' : c.response}
+                </div>` : ''}
+              </div>
+            </div>
+          `).join('')
+        }
+      `;
+    }
+
+    function openPatientFromList(patientId) {
+      const appt = allAppointments.find(a => a.patient.id === patientId);
+      if (appt) openPatientModal(appt);
+    }
+
+    function closeModal(event) {
+      if (event.target === document.getElementById('patientModal')) {
+        document.getElementById('patientModal').style.display = 'none';
+      }
+    }
+
+    function logout() {
+      sessionStorage.removeItem('doctor');
+      doctor = null;
+      document.getElementById('dashboard').classList.remove('visible');
+      document.getElementById('loginPage').style.display = 'flex';
+    }
+
+    // Enter key
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter') handleLogin();
+    });
+
+    // Auto-login se sessione attiva
+    const stored = sessionStorage.getItem('doctor');
+    if (stored) {
+      doctor = JSON.parse(stored);
+      showDashboard();
+    }
+  </script>
+</body>
+</html>
