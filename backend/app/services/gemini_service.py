@@ -63,7 +63,8 @@ def recommend_doctor_specialization(user_message: str) -> dict:
     medica più adatta.
     """
     system_prompt = """Sei un assistente medico che analizza i sintomi dei pazienti.
-Il tuo compito è identificare la specializzazione medica più adatta in base ai sintomi descritti.
+Il tuo compito è identificare la specializzazione medica più adatta in base ai SINTOMI descritti.
+Ignora completamente le parole come "immagine", "foto", "analisi", "diagnostica" — concentrati solo sui sintomi clinici.
 Rispondi SOLO con un JSON valido, nessun testo aggiuntivo, nel seguente formato:
 {
     "specialization": "nome della specializzazione in italiano",
@@ -116,10 +117,12 @@ def generate_medical_response_with_image(user_message: str, image_path: str, pat
         messages=[
             {
                 "role": "system",
-                "content": """Sei un assistente medico che analizza immagini diagnostiche.
-Rispondi in italiano in modo chiaro e professionale.
-Descrivi quello che vedi nell'immagine e fornisci osservazioni generali.
-Ricorda sempre di consigliare una valutazione medica professionale."""
+                "content": """Sei un assistente medico virtuale. Hai ricevuto un'immagine dal paziente.
+Analizza SEMPRE l'immagine fornita e descrivi quello che vedi.
+Se è un'immagine medica (radiografia, analisi, referto, foto di sintomi), fornisci osservazioni cliniche generali.
+Se è un testo o screenshot, leggi il contenuto e rispondi di conseguenza.
+Rispondi sempre in italiano in modo professionale.
+Ricorda di consigliare sempre una valutazione medica professionale."""
             },
             {
                 "role": "user",

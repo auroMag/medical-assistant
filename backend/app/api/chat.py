@@ -72,7 +72,8 @@ async def send_message_with_image(
     result = generate_medical_response_with_image(message, image_path, patient.name)
 
     # Analisi triage anche per immagini
-    triage = analyze_triage(message)
+    triage_message = message if message.strip() else "dolore o sintomo non specificato"
+    triage = analyze_triage(triage_message)
 
     # Salva nel DB
     chat = Chat(

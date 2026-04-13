@@ -631,28 +631,36 @@
     }
 
     function appendMessage(text, role, timestamp = null) {
-      const container = document.getElementById('messagesContainer');
-      const welcome = document.getElementById('welcomeMsg');
-      if (welcome) welcome.remove();
+    const container = document.getElementById('messagesContainer');
+    const welcome = document.getElementById('welcomeMsg');
+    if (welcome) welcome.remove();
 
-      const time = timestamp
+    const time = timestamp
         ? new Date(timestamp).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
         : new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
 
-      const initials = patient.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    const initials = patient.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
-      const div = document.createElement('div');
-      div.className = `message ${role}`;
-      div.innerHTML = `
+    // Converti markdown in HTML
+    const formatted = text
+      .replace(/### (.*?)(\n|$)/g, '<h4 style="margin:0.8rem 0 0.4rem;font-size:0.92rem;color:var(--primary-dark);">$1</h4>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\* (.*?)(\n|$)/g, '<li style="margin-left:1rem;">$1</li>')
+      .replace(/\n/g, '<br>');
+
+    const div = document.createElement('div');
+    div.className = `message ${role}`;
+    div.innerHTML = `
         <div class="msg-avatar">${role === 'user' ? initials : '🩺'}</div>
         <div>
-          <div class="msg-bubble">${text.replace(/\n/g, '<br>')}</div>
+          <div class="msg-bubble">${formatted}</div>
           <div class="msg-time">${time}</div>
         </div>
-      `;
-      container.appendChild(div);
-      container.scrollTop = container.scrollHeight;
+    `;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
     }
+
 
     function showTyping() {
       const container = document.getElementById('messagesContainer');
@@ -747,7 +755,7 @@
         if (data.triage) showTriageBanner(data.triage);
 
         // Raccomandazione medico in background
-        fetchRecommendation(text);
+        fetchRecommendation(text || 'analisi immagine diagnostica');
         removeUpload();
 
       } catch (e) {
@@ -760,24 +768,27 @@
     }
 
     async function fetchRecommendation(message) {
-      try {
+    try {
         const res = await fetch(`${API}/api/doctors/recommend`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message })
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message })
         });
         const data = await res.json();
+        console.log('Recommendation data:', data); //
 
-        document.getElementById('recSpec').textContent = data.recommended_specialization;
-        document.getElementById('recReason').textContent = data.reason;
+        document.getElementById('recSpec').textContent = data.recommended_specialization || '—';
+        document.getElementById('recReason').textContent = data.reason || '—';
 
         const urgencyEl = document.getElementById('recUrgency');
-        urgencyEl.textContent = `Urgenza: ${data.urgency}`;
-        urgencyEl.className = `rec-urgency urgency-${data.urgency}`;
+        // Fix: controlla che urgency esista
+        const urgency = data.urgency || 'media';
+        urgencyEl.textContent = `Urgenza: ${urgency}`;
+        urgencyEl.className = `rec-urgency urgency-${urgency}`;
 
         document.getElementById('recBox').classList.add('visible');
-      } catch (e) {}
-    }
+    } catch (e) {}
+}
 
     function useSuggestion(text) {
       document.getElementById('messageInput').value = text;
