@@ -101,9 +101,7 @@ Area medici: `frontend/doctor.html`
 ## Dataset
 
 **MedQuAD** — 47k Q&A mediche dell'NIH, usato per domande su malattie, sintomi e trattamenti  
-**MTSamples** — trascrizioni cliniche reali, aggiunge contesto su come i medici descrivono i casi  
-
-L'architettura ChromaDB supporta collection multiple, quindi aggiungere MIMIC-III richiede solo un nuovo script di preprocessing senza modificare il resto del sistema.
+**MTSamples** — trascrizioni cliniche reali, aggiunge contesto su come i medici descrivono i casi
 
 ---
 
